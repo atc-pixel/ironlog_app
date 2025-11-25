@@ -3,12 +3,17 @@
   "name": "IronLog Fitness Tracker",
   "icons": [
     {
-      "src": "/icon.png",
+      "src": "/apple-icon.png",
       "type": "image/png",
       "sizes": "512x512"
+    },
+    {
+      "src": "/apple-icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#020617",
   "background_color": "#020617",
