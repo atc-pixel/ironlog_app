@@ -19,85 +19,92 @@ export default function HomePage({ onStartWorkout, onOpenAnalysis, onOpenSetting
   };
 
   return (
-    <div className="h-[100dvh] bg-slate-950 text-slate-100 flex flex-col p-6">
+    // h-[100dvh] ve flex-col sayesinde ekranı dikeyde tam bölüyoruz
+    <div className="h-[100dvh] bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden">
        
-       {/* Üst Alan */}
-       <div className="mt-8 mb-8 flex justify-between items-start">
-          <div>
+       {/* --- ÜST KISIM (SABİT ALAN) --- */}
+       <div className="flex-none p-6 pb-0">
+           <div className="mt-2 mb-6 flex justify-between items-start">
+              <div>
+                  <button 
+                    onClick={onOpenSettings}
+                    className="mb-4 bg-slate-900 p-2.5 rounded-xl text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-800 transition-colors"
+                  >
+                    <Settings size={20} />
+                  </button>
+                  <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-400 to-slate-600 italic tracking-tighter mb-1">
+                    IRONLOG
+                  </h1>
+                  <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Progressive Overload Assistant</p>
+              </div>
+
+              {history && history.length > 0 && (
+                <button 
+                  onClick={handleClearHistory}
+                  className="bg-slate-900 p-3 rounded-xl text-slate-600 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-slate-800"
+                >
+                  <Trash2 size={20} />
+                </button>
+              )}
+           </div>
+
+           {/* Başlat Kartı */}
+           <div className="bg-slate-900 rounded-3xl p-5 border border-slate-800 shadow-xl mb-4">
+              <div className="flex items-center gap-3 mb-5">
+                 <div className="bg-blue-600/20 p-3 rounded-xl text-blue-500">
+                    <Calendar size={24} />
+                 </div>
+                 <div className="flex flex-col">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Tarih Seç</span>
+                    <input 
+                      type="date" 
+                      value={date} 
+                      onChange={(e) => setDate(e.target.value)}
+                      className="bg-transparent text-white font-bold text-xl outline-none w-full"
+                    />
+                 </div>
+              </div>
+              
               <button 
-                onClick={onOpenSettings}
-                className="mb-4 bg-slate-900 p-2.5 rounded-xl text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-800 transition-colors"
+                 onClick={() => onStartWorkout(date)}
+                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-2xl font-black text-xl shadow-lg shadow-blue-900/40 flex items-center justify-center gap-3 active:scale-[0.98] transition-transform"
               >
-                <Settings size={20} />
+                 ANTREMANA BAŞLA
+                 <ChevronRight size={24} strokeWidth={3} />
               </button>
-              <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-400 to-slate-600 italic tracking-tighter mb-2">
-                IRONLOG
-              </h1>
-              {/* GÜNCELLENDİ: Assistant Yazısı */}
-              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Progressive Overload Assistant</p>
-          </div>
+           </div>
 
-          {history && history.length > 0 && (
-            <button 
-              onClick={handleClearHistory}
-              className="bg-slate-900 p-3 rounded-xl text-slate-600 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-slate-800"
-            >
-              <Trash2 size={20} />
-            </button>
-          )}
-       </div>
-
-       {/* Başlat Kartı */}
-       <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl mb-6">
-          <div className="flex items-center gap-3 mb-6">
-             <div className="bg-blue-600/20 p-3 rounded-xl text-blue-500">
-                <Calendar size={24} />
-             </div>
-             <div className="flex flex-col">
-                <span className="text-xs font-bold text-slate-500 uppercase">Tarih Seç</span>
-                <input 
-                  type="date" 
-                  value={date} 
-                  onChange={(e) => setDate(e.target.value)}
-                  className="bg-transparent text-white font-bold text-xl outline-none"
-                />
-             </div>
-          </div>
-          
-          <button 
-             onClick={() => onStartWorkout(date)}
-             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-5 rounded-2xl font-black text-xl shadow-lg shadow-blue-900/40 flex items-center justify-center gap-3 active:scale-[0.98] transition-transform"
-          >
-             ANTREMANA BAŞLA
-             <ChevronRight size={24} strokeWidth={3} />
-          </button>
-       </div>
-
-       <button 
-          onClick={onOpenAnalysis}
-          className="w-full bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-300 p-4 rounded-2xl font-bold flex items-center justify-between mb-8 group transition-all"
-       >
-          <div className="flex items-center gap-3">
-             <div className="bg-emerald-500/10 text-emerald-500 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                <TrendingUp size={20} />
-             </div>
-             <span>Analiz</span>
-          </div>
-          <ChevronRight size={20} className="text-slate-500" />
-       </button>
-
-       {/* Liste Alanı */}
-       <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex items-center gap-2 mb-4 opacity-70">
+           {/* Analiz Butonu */}
+           <button 
+              onClick={onOpenAnalysis}
+              className="w-full bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-300 p-4 rounded-2xl font-bold flex items-center justify-between mb-6 group transition-all"
+           >
+              <div className="flex items-center gap-3">
+                 <div className="bg-emerald-500/10 text-emerald-500 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                    <TrendingUp size={20} />
+                 </div>
+                 <span>Analiz</span>
+              </div>
+              <ChevronRight size={20} className="text-slate-500" />
+           </button>
+           
+           {/* Liste Başlığı */}
+           <div className="flex items-center gap-2 mb-2 px-1 opacity-70">
              <History size={16} />
              <span className="text-xs font-bold uppercase tracking-widest">Son Antrenmanlar</span>
-          </div>
-          
-          {/* GÜNCELLENDİ: pb-32 ile alt tarafa ciddi bir boşluk bıraktık */}
-          <div className="overflow-y-auto space-y-3 pb-32 scrollbar-hide h-full">
+           </div>
+       </div>
+
+       {/* --- ALT KISIM (LİSTE ALANI) --- */}
+       {/* flex-1: Kalan tüm boşluğu kaplar. min-h-0: Flex taşmasını önler. */}
+       <div className="flex-1 min-h-0 overflow-y-auto pb-safe px-6">
+          {/* pb-32: Listenin en altına ekstra boşluk bırakır ki parmakla rahat kaydırılsın */}
+          <div className="space-y-3 pb-32 pt-2">
              {(!history || history.length === 0) ? (
-                <div className="text-center text-slate-600 py-10 text-sm font-medium border-2 border-dashed border-slate-900 rounded-2xl">
-                   Henüz kayıtlı antrenman yok. <br/> İlk gününü başlat!
+                // Boş Durum: Alanı doldursun diye h-64 verdik
+                <div className="h-64 flex flex-col items-center justify-center text-slate-600 text-sm font-medium border-2 border-dashed border-slate-800/50 rounded-3xl bg-slate-900/20">
+                   <p>Henüz kayıtlı antrenman yok.</p>
+                   <p className="text-xs mt-2 text-slate-700">İlk gününü başlat!</p>
                 </div>
              ) : (
                 history.map((item) => {
