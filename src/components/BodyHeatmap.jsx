@@ -2,40 +2,31 @@ import React from "react";
 import Body from "@mjcdev/react-body-highlighter";
 
 export default function BodyHeatmap({ colors, scale = 1 }) {
-  // --- 1. RENK PALETİ ---
-  // heatmapLogic.js'den gelen renk kodlarını, bileşenin anlayacağı
-  // renk dizisi sırasına çeviriyoruz.
   
   const palette = [
-    "#1e293b", // Varsayılan/Boş (Slate-800)
-    "#ef4444", // Kırmızı (Düşüş)
-    "#fb923c", // Turuncu
-    "#facc15", // Sarı (Nötr)
-    "#86efac", // Açık Yeşil
-    "#22c55e"  // Koyu Yeşil (Yüksek Artış)
+    "#1e293b", // 1: Boş
+    "#ef4444", // 2: Kırmızı
+    "#fb923c", // 3: Turuncu
+    "#facc15", // 4: Sarı
+    "#86efac", // 5: Açık Yeşil
+    "#22c55e"  // 6: Koyu Yeşil
   ];
 
-  // Renk kodunu Intensity (1-5) değerine çeviren yardımcı fonksiyon
   const getIntensity = (hexColor) => {
     const index = palette.indexOf(hexColor);
-    // Eğer renk palette yoksa (veya undefined ise) varsayılan (0. index) olsun
-    // Intensity, paletteki index + 1 olarak çalışır (1 tabanlı)
-    return index === -1 ? 1 : index + 1; 
+    return index === -1 ? 1 : index + 1;
   };
 
   const safeColors = colors || {};
 
-  // --- 2. MAPPING (EŞLEŞTİRME) ---
-  // Ironlog kas gruplarını -> Paketin "slug" isimlerine çeviriyoruz.
-  // Paket "chest", "upper-back" gibi spesifik isimler bekliyor.
-  
   const mapMuscleToSlugs = (groupName, intensity) => {
     const mapping = {
-      chest: ["chest"], // 'pectorals' yerine 'chest'
-      back: ["trapezius", "upper-back", "lower-back"],
-      arms: ["biceps", "triceps", "forearm", "front-deltoids", "back-deltoids"],
-      shoulders: ["front-deltoids", "back-deltoids", "trapezius"],
-      legs: ["quadriceps", "calves", "hamstring", "gluteal", "adductor"], // 'adductors' değil 'adductor'
+      chest: ["chest", "front-deltoids"], 
+      back: ["upper-back", "lower-back", "trapezius", "back-deltoids"], 
+      arms: ["biceps", "triceps", "forearm"], 
+      shoulders: ["front-deltoids", "back-deltoids", "trapezius"], 
+      // Hem tekil hem çoğul ekledik (adductor/adductors)
+      legs: ["quadriceps", "hamstring", "calves", "gluteal", "adductor", "adductors"], 
       abs: ["abs", "obliques"]
     };
 
@@ -43,7 +34,6 @@ export default function BodyHeatmap({ colors, scale = 1 }) {
     return slugs.map(slug => ({ slug, intensity }));
   };
 
-  // --- 3. VERİ OLUŞTURMA ---
   const data = [
     ...mapMuscleToSlugs("chest", getIntensity(safeColors.chest)),
     ...mapMuscleToSlugs("back", getIntensity(safeColors.back)),
@@ -58,28 +48,14 @@ export default function BodyHeatmap({ colors, scale = 1 }) {
       className="flex justify-center items-center gap-10 select-none"
       style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
     >
-      {/* ÖN TARA (ANTERIOR) */}
-      <div className="flex flex-col items-center">
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">ÖN</span>
-        <Body 
-          data={data} 
-          gender="male" 
-          side="front" 
-          scale={1.5} 
-          colors={palette} 
-        />
+      <div className="flex flex-col items-center relative">
+        <span className="absolute -top-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">ÖN</span>
+        <Body data={data} gender="male" side="front" scale={1.5} colors={palette} />
       </div>
 
-      {/* ARKA TARA (POSTERIOR) */}
-      <div className="flex flex-col items-center">
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">ARKA</span>
-        <Body 
-          data={data} 
-          gender="male" 
-          side="back" 
-          scale={1.5} 
-          colors={palette} 
-        />
+      <div className="flex flex-col items-center relative">
+        <span className="absolute -top-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">ARKA</span>
+        <Body data={data} gender="male" side="back" scale={1.5} colors={palette} />
       </div>
     </div>
   );

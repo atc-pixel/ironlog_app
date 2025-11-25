@@ -1,90 +1,71 @@
 // --- 1. SABİTLER: HAREKET & KAS EŞLEŞTİRMESİ ---
 export const EXERCISE_DB = {
-  // --- GÖĞÜS (Chest - Ön) ---
+  // GÖĞÜS (Chest)
   "Bench Press": "chest",
   "Incline Dumbbell Press": "chest",
   "Cable Fly": "chest",
-  "Dumbbell Press": "chest",
   "Push Up": "chest",
-  "Chest Dip": "chest",
-
-  // --- SIRT (Lats/Back - Arka) ---
-  "Pull Up": "lats",
-  "Lat Pulldown": "lats",
-  "Barbell Row": "lats",
-  "Seated Cable Row": "lats",
-  "Deadlift": "lats", 
-  "T-Bar Row": "lats",
+  "Dumbbell Press": "chest",
+  "Chest Press": "chest",
+  "Pec Deck": "chest",
   
-  // --- OMUZ (Shoulders - Ön/Arka) ---
+  // SIRT (Back)
+  "Deadlift": "back",
+  "Barbell Row": "back",
+  "Lat Pulldown": "back",
+  "Pull Up": "back",
+  "Seated Cable Row": "back",
+  "T-Bar Row": "back",
+  "Face Pull": "back", // Omuz/Sırt hibrit, sırta aldık
+  
+  // BACAK (Legs) - YENİ EKLENENLER
+  "Squat": "legs",
+  "Squad": "legs", // Yazım hatası toleransı
+  "Barbell Squat": "legs",
+  "Leg Press": "legs",
+  "Leg Extension": "legs",
+  "Lunge": "legs",
+  "Lunges": "legs",
+  "Calf Raise": "legs",
+  "Romanian Deadlift": "legs",
+  "RDL": "legs",
+  "Leg Curl": "legs",
+  "Goblet Squat": "legs",
+  "Bulgarian Split Squat": "legs",
+  
+  // OMUZ (Shoulders)
   "Overhead Press": "shoulders",
-  "Military Press": "shoulders",
+  "OHP": "shoulders",
   "Lateral Raise": "shoulders",
-  "Face Pull": "shoulders",
-  "Front Raise": "shoulders",
+  "Military Press": "shoulders",
   "Arnold Press": "shoulders",
+  "Front Raise": "shoulders",
+  
+  // KOL (Arms)
+  "Bicep Curl": "arms",
+  "Hammer Curl": "arms",
+  "Tricep Pushdown": "arms",
+  "Triceps Pushdown": "arms",
+  "Skullcrusher": "arms",
+  "Dips": "arms",
+  "Preacher Curl": "arms",
 
-  // --- TRAPEZ (Traps - Ön/Arka) ---
-  "Shrugs": "traps",
-  "Upright Row": "traps",
-
-  // --- ARKA KOL (Triceps - Arka) ---
-  "Tricep Pushdown": "triceps",
-  "Skullcrusher": "triceps",
-  "Close Grip Bench Press": "triceps",
-  "Dips": "triceps",
-  "Tricep Extension": "triceps",
-
-  // --- PAZU (Biceps - Ön) - YENİ EKLENDİ ---
-  "Bicep Curl": "biceps",
-  "Barbell Curl": "biceps",
-  "Preacher Curl": "biceps",
-  "Concentration Curl": "biceps",
-
-  // --- ÖN KOL (Forearms - Ön) ---
-  "Hammer Curl": "forearms", 
-  "Reverse Curl": "forearms",
-  "Wrist Curl": "forearms",
-  "Farmer Walk": "forearms",
-
-  // --- KARIN (Abs - Ön) ---
+  // KARIN (Abs)
   "Crunch": "abs",
   "Leg Raise": "abs",
   "Plank": "abs",
-  "Cable Crunch": "abs",
   "Russian Twist": "abs",
-
-  // --- GLUTES (Kalça - Arka) ---
-  "Hip Thrust": "glutes",
-  "Glute Bridge": "glutes",
-  "Cable Kickback": "glutes",
-
-  // --- QUADS (Ön Bacak - Ön) ---
-  "Squat": "quads",
-  "Leg Press": "quads",
-  "Leg Extension": "quads",
-  "Lunge": "quads",
-  "Goblet Squat": "quads",
-  "Bulgarian Split Squat": "quads",
-
-  // --- HAMSTRINGS (Arka Bacak - Arka) ---
-  "Romanian Deadlift": "hamstrings",
-  "Leg Curl": "hamstrings",
-  "Good Morning": "hamstrings",
-
-  // --- KALF (Calves - Arka) ---
-  "Calf Raise": "calves",
-  "Seated Calf Raise": "calves"
+  "Hanging Leg Raise": "abs"
 };
 
 // --- 2. RENK SKALASI ---
 export const HEATMAP_COLORS = {
-  highPositive: "#22c55e", // Koyu Yeşil
-  lowPositive: "#86efac",  // Açık Yeşil
-  neutral: "#facc15",      // Sarı
-  lowNegative: "#fb923c",  // Turuncu
+  empty: "#1e293b",        // Veri yok (Koyu Gri)
   highNegative: "#ef4444", // Kırmızı
-  empty: "#334155"         // Gri (Daha belirgin bir gri seçtim)
+  lowNegative: "#fb923c",  // Turuncu
+  neutral: "#facc15",      // Sarı
+  lowPositive: "#86efac",  // Açık Yeşil
+  highPositive: "#22c55e"  // Koyu Yeşil
 };
 
 // --- 3. HESAPLAMA MOTORU ---
@@ -95,15 +76,33 @@ export const calculateMuscleHeatmap = (history) => {
   const threeWeeksAgo = new Date();
   threeWeeksAgo.setDate(now.getDate() - 21);
 
-  const recentWorkouts = history.filter(h => new Date(h.date) >= threeWeeksAgo);
+  // Tarih filtresi ve güvenli tarih dönüştürme
+  const recentWorkouts = history.filter(h => {
+    const d = new Date(h.date);
+    return !isNaN(d) && d >= threeWeeksAgo;
+  });
+  
   const exerciseStats = {};
 
   recentWorkouts.forEach(day => {
     day.exercises.forEach(ex => {
-      if (EXERCISE_DB[ex.name]) {
-        if (!exerciseStats[ex.name]) exerciseStats[ex.name] = [];
+      // Büyük/küçük harf duyarlılığını kaldırmak için trim()
+      const exName = ex.name.trim();
+      
+      // Veritabanında var mı kontrol et
+      if (EXERCISE_DB[exName]) {
+        if (!exerciseStats[exName]) exerciseStats[exName] = [];
+        
+        // 1RM Hesabı
         const max1RM = Math.max(...ex.sets.map(s => Number(s.weight) * (1 + Number(s.reps) / 30)));
-        exerciseStats[ex.name].push({ date: new Date(day.date), value: max1RM });
+        
+        // Eğer geçerli bir sayı ise ekle
+        if (!isNaN(max1RM) && max1RM > 0) {
+          exerciseStats[exName].push({
+            date: new Date(day.date),
+            value: max1RM
+          });
+        }
       }
     });
   });
@@ -112,33 +111,38 @@ export const calculateMuscleHeatmap = (history) => {
 
   Object.keys(exerciseStats).forEach(exName => {
     const dataPoints = exerciseStats[exName].sort((a, b) => a.date - b.date);
+    const muscleGroup = EXERCISE_DB[exName];
+
+    if (!muscleTrends[muscleGroup]) muscleTrends[muscleGroup] = [];
+
     if (dataPoints.length >= 2) {
       const start = dataPoints[0].value;
       const end = dataPoints[dataPoints.length - 1].value;
+      
       if (start > 0) {
         const percentChange = ((end - start) / start) * 100;
-        const muscleGroup = EXERCISE_DB[exName];
-        if (!muscleTrends[muscleGroup]) muscleTrends[muscleGroup] = [];
         muscleTrends[muscleGroup].push(percentChange);
       }
+    } else if (dataPoints.length === 1) {
+      // Tek veri varsa bile aktif (0 değişim = Sarı)
+      muscleTrends[muscleGroup].push(0);
     }
   });
 
   const finalColors = {};
-  // Biceps Eklendi
-  const allMuscles = ["chest", "lats", "shoulders", "traps", "triceps", "biceps", "forearms", "abs", "glutes", "quads", "hamstrings", "calves"];
-  
-  allMuscles.forEach(m => finalColors[m] = HEATMAP_COLORS.empty);
+  ["chest", "back", "legs", "shoulders", "arms", "abs"].forEach(m => finalColors[m] = HEATMAP_COLORS.empty);
 
   Object.keys(muscleTrends).forEach(muscle => {
     const changes = muscleTrends[muscle];
-    const avgChange = changes.reduce((a, b) => a + b, 0) / changes.length;
+    if (changes.length > 0) {
+      const avgChange = changes.reduce((a, b) => a + b, 0) / changes.length;
 
-    if (avgChange >= 5) finalColors[muscle] = HEATMAP_COLORS.highPositive;
-    else if (avgChange > 0) finalColors[muscle] = HEATMAP_COLORS.lowPositive;
-    else if (avgChange === 0) finalColors[muscle] = HEATMAP_COLORS.neutral;
-    else if (avgChange > -5) finalColors[muscle] = HEATMAP_COLORS.lowNegative;
-    else finalColors[muscle] = HEATMAP_COLORS.highNegative;
+      if (avgChange >= 5) finalColors[muscle] = HEATMAP_COLORS.highPositive;
+      else if (avgChange > 0) finalColors[muscle] = HEATMAP_COLORS.lowPositive;
+      else if (avgChange === 0) finalColors[muscle] = HEATMAP_COLORS.neutral;
+      else if (avgChange > -5) finalColors[muscle] = HEATMAP_COLORS.lowNegative;
+      else finalColors[muscle] = HEATMAP_COLORS.highNegative;
+    }
   });
 
   return { colors: finalColors, trends: muscleTrends };
