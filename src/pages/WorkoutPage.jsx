@@ -78,7 +78,8 @@ export default function WorkoutPage({ onFinishAndExit, initialDate }) {
   const defaultExercises = [
     "Squat", "Bench Press", "Deadlift", "Overhead Press", 
     "Barbell Row", "Lat Pulldown", "Leg Press", "Bicep Curl", 
-    "Tricep Pushdown", "Lateral Raise"
+    "Tricep Pushdown", "Lateral Raise", "Pull Up", "Dumbbell Press",
+    "Face Pull", "Hammer Curl", "Lunges", "Calf Raise", "Crunch"
   ];
   
   // Listeyi Birleştir: Varsayılanlar + Özel Eklenenler + Ekleme Seçeneği
