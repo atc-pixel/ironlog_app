@@ -25,7 +25,6 @@ export default function BodyHeatmap({ colors, scale = 1 }) {
       back: ["upper-back", "lower-back", "trapezius", "back-deltoids"], 
       arms: ["biceps", "triceps", "forearm"], 
       shoulders: ["front-deltoids", "back-deltoids", "trapezius"], 
-      // Hem tekil hem çoğul ekledik (adductor/adductors)
       legs: ["quadriceps", "hamstring", "calves", "gluteal", "adductor", "adductors"], 
       abs: ["abs", "obliques"]
     };
@@ -44,18 +43,19 @@ export default function BodyHeatmap({ colors, scale = 1 }) {
   ];
 
   return (
+    // GÜNCELLEME: gap-10 yerine gap-2, scale parent'tan geleni kullanıyor
     <div 
-      className="flex justify-center items-center gap-10 select-none"
+      className="flex justify-center items-center gap-2 select-none"
       style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
     >
       <div className="flex flex-col items-center relative">
         <span className="absolute -top-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">ÖN</span>
-        <Body data={data} gender="male" side="front" scale={1.5} colors={palette} />
+        <Body data={data} gender="male" side="front" scale={1} colors={palette} />
       </div>
 
       <div className="flex flex-col items-center relative">
         <span className="absolute -top-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">ARKA</span>
-        <Body data={data} gender="male" side="back" scale={1.5} colors={palette} />
+        <Body data={data} gender="male" side="back" scale={1} colors={palette} />
       </div>
     </div>
   );
