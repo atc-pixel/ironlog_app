@@ -1,6 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { useWorkout } from "../context/WorkoutContext";
 import { ArrowLeft, Trophy, Calendar, TrendingUp } from "../components/Icons";
+import BodyHeatmap from "../components/BodyHeatmap";
+import { calculateMuscleHeatmap, HEATMAP_COLORS } from "../utils/heatmapLogic";
+
+// --- RENK AÇIKLAMASI (LEGEND) ---
+const Legend = () => (
+  <div className="flex items-center justify-center gap-3 mt-4 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+    <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full" style={{backgroundColor: HEATMAP_COLORS.highNegative}}></div>Düşüş</div>
+    <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full" style={{backgroundColor: HEATMAP_COLORS.neutral}}></div>Sabit</div>
+    <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full" style={{backgroundColor: HEATMAP_COLORS.highPositive}}></div>Artış</div>
+  </div>
+);
 
 const CloudChart = ({ data, color = "#3b82f6" }) => {
   if (!data || data.length === 0) return <div className="h-64 flex items-center justify-center text-slate-500 text-sm border border-slate-800 border-dashed rounded-xl bg-slate-900/30">Henüz veri yok.</div>;
@@ -63,7 +74,13 @@ const CloudChart = ({ data, color = "#3b82f6" }) => {
 export default function AnalysisPage({ onBack }) {
   const { history, customExercises } = useWorkout();
   const [selectedExercise, setSelectedExercise] = useState("Squat");
-  const allExercises = ["Squat", "Bench Press", "Deadlift", "Overhead Press", "Barbell Row", "Lat Pulldown", "Leg Press", "Bicep Curl", ...customExercises];
+  
+  // Harita Verilerini Hesapla
+  const heatmapData = useMemo(() => calculateMuscleHeatmap(history), [history]);
+
+  const defaultExercises = ["Squat", "Bench Press", "Deadlift", "Overhead Press", "Barbell Row", "Lat Pulldown", "Leg Press", "Bicep Curl"];
+  const allExercises = [...defaultExercises, ...customExercises];
+
   const processedData = useMemo(() => {
       if (!history) return [];
       const data = [];
@@ -77,6 +94,7 @@ export default function AnalysisPage({ onBack }) {
       });
       return data;
   }, [history, selectedExercise]);
+  
   const allMaxWeights = processedData.map(d => Math.max(...d.sets.map(s => Number(s.weight))));
   const currentMaxWeight = allMaxWeights.length > 0 ? allMaxWeights[allMaxWeights.length - 1] : 0;
   const bestMaxWeight = allMaxWeights.length > 0 ? Math.max(...allMaxWeights) : 0;
@@ -85,15 +103,30 @@ export default function AnalysisPage({ onBack }) {
 
   return (
       <div className="h-[100dvh] bg-slate-950 text-slate-100 flex flex-col p-6 overflow-hidden font-sans">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-4">
               <button onClick={onBack} className="bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition-colors"><ArrowLeft size={20} /></button>
               <h1 className="text-2xl font-black text-white italic tracking-tight">ANALİZ</h1>
           </div>
-          <div className="relative mb-6 z-20">
-              <select value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)} className="w-full bg-slate-900 text-white font-bold text-lg py-4 px-6 rounded-2xl border border-slate-800 focus:border-blue-500 outline-none appearance-none shadow-lg">{allExercises.map((ex) => <option key={ex} value={ex}>{ex}</option>)}</select>
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">▼</div>
-          </div>
+
           <div className="flex-1 overflow-y-auto scrollbar-hide pb-10">
+              
+              {/* --- BÖLÜM 1: VÜCUT ISI HARİTASI --- */}
+              <div className="bg-slate-900/30 border border-slate-800/50 rounded-3xl p-5 mb-8">
+                 <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 text-center">Kas Gelişim Durumu (Son 21 Gün)</h2>
+                 <BodyHeatmap colors={heatmapData.colors} scale={1} />
+                 <Legend />
+              </div>
+
+              <div className="h-px w-full bg-slate-800 mb-8"></div>
+
+              {/* --- BÖLÜM 2: HAREKET DETAYI --- */}
+              <h2 className="text-xl font-black text-white mb-4">Hareket Detayı</h2>
+              
+              <div className="relative mb-6 z-20">
+                  <select value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)} className="w-full bg-slate-900 text-white font-bold text-lg py-4 px-6 rounded-2xl border border-slate-800 focus:border-blue-500 outline-none appearance-none shadow-lg">{allExercises.map((ex) => <option key={ex} value={ex}>{ex}</option>)}</select>
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">▼</div>
+              </div>
+
               <div className="mb-8">
                   <div className="flex justify-between items-center mb-4 px-1">
                       <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Çalışma Aralığı (Min-Max)</span>
@@ -113,4 +146,4 @@ export default function AnalysisPage({ onBack }) {
           </div>
       </div>
   );
-};
+}
