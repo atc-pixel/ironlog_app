@@ -1,9 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
 import { WorkoutProvider } from "./context/WorkoutContext"; 
 import HomePage from "./pages/HomePage";
 import WorkoutPage from "./pages/WorkoutPage";
 import AnalysisPage from "./pages/AnalysisPage";
 import SettingsPage from "./pages/SettingsPage";
+import LoginPage from "./pages/LoginPage";
+
+// Yükleme Ekranı (Firebase bağlanırken 1-2 saniye görünür)
+const LoadingScreen = () => (
+  <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
+    <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Yükleniyor...</p>
+  </div>
+);
 
 function AppContent() {
   const [currentScreen, setCurrentScreen] = useState('home'); 
@@ -26,6 +37,24 @@ function AppContent() {
 }
 
 export default function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Firebase dinleyicisi: Kullanıcı durumu değişince (Giriş/Çıkış) çalışır
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) return <LoadingScreen />;
+
+  // Kullanıcı yoksa Giriş Ekranını göster
+  if (!user) return <LoginPage />;
+
+  // Kullanıcı varsa Uygulamayı göster
   return (
     <WorkoutProvider>
       <AppContent />
