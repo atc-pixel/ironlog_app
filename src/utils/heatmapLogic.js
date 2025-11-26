@@ -1,6 +1,6 @@
-// --- 1. SABİTLER: HAREKET & KAS EŞLEŞTİRMESİ ---
+// --- 1. SABİTLER: HAREKET & KAS GRUPLARI (12 PARÇALI YAPI) ---
 export const EXERCISE_DB = {
-  // GÖĞÜS (Chest)
+  // 1. GÖĞÜS (Chest)
   "Bench Press": "chest",
   "Incline Dumbbell Press": "chest",
   "Cable Fly": "chest",
@@ -9,61 +9,86 @@ export const EXERCISE_DB = {
   "Chest Press": "chest",
   "Pec Deck": "chest",
   
-  // SIRT (Back)
-  "Deadlift": "back",
+  // 2. SIRT (Back - Kanat & Bel)
   "Barbell Row": "back",
   "Lat Pulldown": "back",
   "Pull Up": "back",
   "Seated Cable Row": "back",
   "T-Bar Row": "back",
-  "Face Pull": "back", // Omuz/Sırt hibrit, sırta aldık
+  "Deadlift": "back", // Hem sırt hem bacak ama genelde sırta yazılır
+  "Rack Pull": "back",
   
-  // BACAK (Legs) - YENİ EKLENENLER
-  "Squat": "legs",
-  "Squad": "legs", // Yazım hatası toleransı
-  "Barbell Squat": "legs",
-  "Leg Press": "legs",
-  "Leg Extension": "legs",
-  "Lunge": "legs",
-  "Lunges": "legs",
-  "Calf Raise": "legs",
-  "Romanian Deadlift": "legs",
-  "RDL": "legs",
-  "Leg Curl": "legs",
-  "Goblet Squat": "legs",
-  "Bulgarian Split Squat": "legs",
-  
-  // OMUZ (Shoulders)
+  // 3. TRAPEZ (Trapezius)
+  "Shrugs": "trapezius",
+  "Dumbbell Shrug": "trapezius",
+  "Upright Row": "trapezius", // Omuz/Trapez hibrit
+
+  // 4. OMUZ (Shoulders - Ön/Yan/Arka)
   "Overhead Press": "shoulders",
   "OHP": "shoulders",
   "Lateral Raise": "shoulders",
   "Military Press": "shoulders",
   "Arnold Press": "shoulders",
   "Front Raise": "shoulders",
+  "Face Pull": "shoulders",
+  "Rear Delt Fly": "shoulders",
   
-  // KOL (Arms)
-  "Bicep Curl": "arms",
-  "Hammer Curl": "arms",
-  "Tricep Pushdown": "arms",
-  "Triceps Pushdown": "arms",
-  "Skullcrusher": "arms",
-  "Dips": "arms",
-  "Preacher Curl": "arms",
+  // 5. PAZU (Biceps)
+  "Bicep Curl": "biceps",
+  "Hammer Curl": "biceps",
+  "Preacher Curl": "biceps",
+  "Concentration Curl": "biceps",
+  "Barbell Curl": "biceps",
 
-  // KARIN (Abs)
+  // 6. ARKA KOL (Triceps)
+  "Tricep Pushdown": "triceps",
+  "Triceps Pushdown": "triceps", // Yazım toleransı
+  "Skullcrusher": "triceps",
+  "Dips": "triceps",
+  "Tricep Extension": "triceps",
+  "Close Grip Bench Press": "triceps",
+
+  // 7. ÖN KOL (Forearms)
+  "Wrist Curl": "forearms",
+  "Reverse Curl": "forearms",
+  "Farmers Walk": "forearms",
+
+  // 8. KARIN (Abs)
   "Crunch": "abs",
   "Leg Raise": "abs",
   "Plank": "abs",
   "Russian Twist": "abs",
-  "Hanging Leg Raise": "abs"
+  "Hanging Leg Raise": "abs",
+  "Sit Up": "abs",
+
+  // 9. ÜST BACAK (Legs - Quads/Hams/Glutes/Adductors)
+  "Squat": "legs",
+  "Squad": "legs", // Eski veriler için tolerans
+  "Barbell Squat": "legs",
+  "Leg Press": "legs",
+  "Leg Extension": "legs",
+  "Lunge": "legs",
+  "Lunges": "legs",
+  "Romanian Deadlift": "legs", // RDL arka bacak odaklıdır
+  "RDL": "legs",
+  "Leg Curl": "legs",
+  "Goblet Squat": "legs",
+  "Bulgarian Split Squat": "legs",
+  "Hip Thrust": "legs", // Glute odaklı
+  
+  // 10. BALDIR (Calves)
+  "Calf Raise": "calves",
+  "Seated Calf Raise": "calves",
+  
+  // 11. DİĞERLERİ (Tibialis, Neck vb. - Şimdilik boş)
 };
 
 // --- 2. RENK SKALASI ---
 export const HEATMAP_COLORS = {
-  empty: "#1e293b",        // Veri yok (Koyu Gri)
+  empty: "#1e293b",        // Veri yok (Koyu Gri - Slate 800)
   highNegative: "#ef4444", // Kırmızı
   lowNegative: "#fb923c",  // Turuncu
-  neutral: "#facc15",      // Sarı
+  neutral: "#facc15",      // Sarı (Yeni/Sabit)
   lowPositive: "#86efac",  // Açık Yeşil
   highPositive: "#22c55e"  // Koyu Yeşil
 };
@@ -76,7 +101,6 @@ export const calculateMuscleHeatmap = (history) => {
   const threeWeeksAgo = new Date();
   threeWeeksAgo.setDate(now.getDate() - 21);
 
-  // Tarih filtresi ve güvenli tarih dönüştürme
   const recentWorkouts = history.filter(h => {
     const d = new Date(h.date);
     return !isNaN(d) && d >= threeWeeksAgo;
@@ -86,17 +110,14 @@ export const calculateMuscleHeatmap = (history) => {
 
   recentWorkouts.forEach(day => {
     day.exercises.forEach(ex => {
-      // Büyük/küçük harf duyarlılığını kaldırmak için trim()
       const exName = ex.name.trim();
       
-      // Veritabanında var mı kontrol et
       if (EXERCISE_DB[exName]) {
         if (!exerciseStats[exName]) exerciseStats[exName] = [];
         
-        // 1RM Hesabı
+        // 1RM Hesabı (Epley)
         const max1RM = Math.max(...ex.sets.map(s => Number(s.weight) * (1 + Number(s.reps) / 30)));
         
-        // Eğer geçerli bir sayı ise ekle
         if (!isNaN(max1RM) && max1RM > 0) {
           exerciseStats[exName].push({
             date: new Date(day.date),
@@ -118,20 +139,26 @@ export const calculateMuscleHeatmap = (history) => {
     if (dataPoints.length >= 2) {
       const start = dataPoints[0].value;
       const end = dataPoints[dataPoints.length - 1].value;
-      
       if (start > 0) {
         const percentChange = ((end - start) / start) * 100;
         muscleTrends[muscleGroup].push(percentChange);
       }
     } else if (dataPoints.length === 1) {
-      // Tek veri varsa bile aktif (0 değişim = Sarı)
-      muscleTrends[muscleGroup].push(0);
+      muscleTrends[muscleGroup].push(0); // Tek antrenman = Sarı (Aktif)
     }
   });
 
+  // Tüm grupları varsayılan renkle başlat
   const finalColors = {};
-  ["chest", "back", "legs", "shoulders", "arms", "abs"].forEach(m => finalColors[m] = HEATMAP_COLORS.empty);
+  const allGroups = [
+    "chest", "back", "trapezius", "shoulders", 
+    "biceps", "triceps", "forearms", "abs", 
+    "legs", "calves", "tibialis", "neck"
+  ];
+  
+  allGroups.forEach(m => finalColors[m] = HEATMAP_COLORS.empty);
 
+  // Hesaplanan değerleri renge çevir
   Object.keys(muscleTrends).forEach(muscle => {
     const changes = muscleTrends[muscle];
     if (changes.length > 0) {
