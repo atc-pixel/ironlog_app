@@ -174,3 +174,41 @@ export const calculateMuscleHeatmap = (history) => {
 
   return { colors: finalColors, trends: muscleTrends };
 };
+
+
+// --- 4. GRUPLAMA YARDIMCISI (UI İÇİN) ---
+export const GROUP_LABELS = {
+  chest: "Göğüs",
+  back: "Sırt",
+  legs: "Bacak",
+  shoulders: "Omuz",
+  biceps: "Pazu (Biceps)",
+  triceps: "Arka Kol (Triceps)",
+  forearms: "Ön Kol & Bilek",
+  abs: "Karın (Core)",
+  trapezius: "Trapez",
+  calves: "Baldır",
+  tibialis: "Kaval & Ayak",
+  neck: "Boyun"
+};
+
+export const getGroupedExercises = () => {
+  const grouped = {};
+  
+  // 1. Veritabanındaki hareketleri grupla
+  Object.entries(EXERCISE_DB).forEach(([exercise, groupSlug]) => {
+    // "Squad" gibi hatalı/alternatif yazımları listeye koyma, sadece ana hareketleri al
+    // (Burada basit bir filtreleme yapıyoruz, istersen hepsini alabilirsin)
+    if (exercise === "Squad" || exercise === "Triceps Pushdown" || exercise === "OHP") return;
+
+    if (!grouped[groupSlug]) grouped[groupSlug] = [];
+    grouped[groupSlug].push(exercise);
+  });
+
+  // 2. Alfabetik sırala
+  Object.keys(grouped).forEach(key => {
+    grouped[key].sort();
+  });
+
+  return grouped;
+};
