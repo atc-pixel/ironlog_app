@@ -2,10 +2,10 @@ import React from "react";
 import { useWorkout } from "../context/WorkoutContext";
 import { auth } from "../firebase"; // Auth servisi
 import { signOut } from "firebase/auth"; // Çıkış fonksiyonu
-import { ArrowLeft, Clock, Settings, X } from "../components/Icons"; // LogOut ikonu yerine X kullandık şimdilik
+import { ArrowLeft, Clock, Settings, X, Save } from "../components/Icons"; // Save ikonunu ekledik
 
 export default function SettingsPage({ onBack }) {
-  const { settings, updateSettings, user } = useWorkout();
+  const { settings, updateSettings, user, injectDemoData } = useWorkout();
   const timeOptions = [30, 60, 90, 120, 180];
 
   const handleLogout = async () => {
@@ -85,6 +85,22 @@ export default function SettingsPage({ onBack }) {
               </div>
             </div>
           )}
+        </div>
+
+        {/* --- DEMO VERİSİ BUTONU --- */}
+        <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-5">
+          <h3 className="font-bold text-lg text-white mb-2">Geliştirici Araçları</h3>
+          <p className="text-xs text-slate-500 mb-4">Uygulamayı test etmek için örnek veri yükler.</p>
+          <button 
+            onClick={() => {
+              if(window.confirm("Mevcut geçmiş silinecek ve demo verisi yüklenecek. Onaylıyor musun?")) {
+                injectDemoData();
+              }
+            }}
+            className="w-full bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 p-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
+          >
+            <Save size={18} /> 1 Aylık Demo Verisi Yükle
+          </button>
         </div>
 
         {/* Çıkış Yap Butonu */}

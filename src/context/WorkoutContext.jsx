@@ -1,8 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-// Firebase kütüphanelerini ekliyoruz
 import { db, auth } from "../firebase";
 import { doc, setDoc, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { getDemoData } from "../utils/demodata"; // <--- YENİ: Veriyi buradan çekiyoruz
 
 const WorkoutContext = createContext();
 
@@ -11,19 +11,18 @@ export const useWorkout = () => useContext(WorkoutContext);
 export const WorkoutProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   
-  // Başlangıç değerleri boş, veritabanından dolacak
   const [history, setHistory] = useState([]);
   const [customExercises, setCustomExercises] = useState([]);
   const [settings, setSettings] = useState({ restTimerEnabled: true, restTimerSeconds: 90 });
   
-  // Veri yükleniyor mu? (Kullanıcıya boş ekran göstermemek için)
   const [loadingData, setLoadingData] = useState(true);
 
-  // 1. KULLANICIYI TAKİP ET
+  // ... (useEffect'ler ve updateDatabase aynı kalacak) ...
+  
+  // 1. KULLANICIYI TAKİP ET (AYNI)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      // Kullanıcı çıkış yaparsa verileri temizle
       if (!currentUser) {
         setHistory([]);
         setCustomExercises([]);
@@ -33,48 +32,36 @@ export const WorkoutProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // 2. VERİTABANINI DİNLE (Canlı Bağlantı)
+  // 2. VERİTABANINI DİNLE (AYNI)
   useEffect(() => {
     if (!user) return;
-
-    // 'users' koleksiyonunda, kullanıcının ID'si ile bir döküman oluştur/dinle
     const userDocRef = doc(db, "users", user.uid);
-
-    // onSnapshot: Veritabanında bir şey değişirse ANINDA buraya haber verir
     const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        // Verileri state'e doldur
         if (data.history) setHistory(data.history);
         if (data.customExercises) setCustomExercises(data.customExercises);
         if (data.settings) setSettings(data.settings);
       } else {
-        // Yeni kullanıcıysa veritabanında boş bir kayıt oluştur
         setDoc(userDocRef, { history: [], customExercises: [], settings: { restTimerEnabled: true, restTimerSeconds: 90 } });
       }
       setLoadingData(false);
     });
-
     return () => unsubscribe();
   }, [user]);
 
-  // --- VERİTABANINA KAYDETME FONKSİYONU ---
-  // Tek bir fonksiyonla tüm veriyi güncelliyoruz
+  // VERİTABANINA KAYDETME (AYNI)
   const updateDatabase = async (newData) => {
     if (!user) return;
     const userDocRef = doc(db, "users", user.uid);
-    // merge: true -> Sadece değişen alanları güncelle, diğerlerini silme
     await setDoc(userDocRef, newData, { merge: true });
   };
 
-  // --- FONKSİYONLAR ---
-
+  // ... (saveWorkout, addCustomExercise, updateSettings, clearHistory AYNI) ...
+  
   const saveWorkout = (workoutData) => {
-    // Önce yerel state'i güncelle (Hız için)
-    // Sonra veritabanına gönder
     let updatedHistory = [...history];
     const existingIndex = history.findIndex(item => item.date === workoutData.date);
-    
     if (existingIndex !== -1) {
       updatedHistory[existingIndex] = {
         ...updatedHistory[existingIndex],
@@ -84,9 +71,8 @@ export const WorkoutProvider = ({ children }) => {
     } else {
       updatedHistory = [workoutData, ...history];
     }
-
-    setHistory(updatedHistory); // Ekran hemen güncellensin
-    updateDatabase({ history: updatedHistory }); // Buluta gönder
+    setHistory(updatedHistory);
+    updateDatabase({ history: updatedHistory });
   };
 
   const addCustomExercise = (name) => {
@@ -108,6 +94,18 @@ export const WorkoutProvider = ({ children }) => {
     updateDatabase({ history: [] });
   };
 
+  // --- YENİ: TEMİZ VE KISA DEMO FONKSİYONU ---
+  const injectDemoData = async () => {
+    if (!user) return;
+    
+    // Veriyi utils/demoData.js dosyasından alıyoruz
+    const demoHistory = getDemoData(); 
+
+    // Veritabanına basıyoruz
+    await updateDatabase({ history: demoHistory });
+    alert("Demo verileri başarıyla yüklendi! Analiz sayfasına bakabilirsin.");
+  };
+
   return (
     <WorkoutContext.Provider value={{ 
       history, 
@@ -118,7 +116,8 @@ export const WorkoutProvider = ({ children }) => {
       settings, 
       updateSettings,
       user,
-      loadingData 
+      loadingData,
+      injectDemoData // <--- Bunu unutma
     }}>
       {children}
     </WorkoutContext.Provider>
