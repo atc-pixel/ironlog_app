@@ -15,8 +15,8 @@ export default function HistoryPage({ onBack }) {
   return (
     <div className="h-[100dvh] bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden">
       
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 pb-4 bg-slate-950 z-10 border-b border-slate-900/50">
+      {/* GÜNCELLEME: pt-14 (Safe Area) */}
+      <div className="flex items-center justify-between px-6 pb-4 pt-14 bg-slate-950 z-10 border-b border-slate-900/50">
         <div className="flex items-center gap-4">
           <button onClick={onBack} className="bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition-colors">
             <ArrowLeft size={20} />
@@ -30,7 +30,6 @@ export default function HistoryPage({ onBack }) {
         )}
       </div>
 
-      {/* Liste */}
       <div className="flex-1 overflow-y-auto pb-safe px-6 scrollbar-hide">
         <div className="space-y-3 pb-10 pt-6">
           {(!history || history.length === 0) ? (
@@ -42,8 +41,6 @@ export default function HistoryPage({ onBack }) {
               const isExpanded = expandedId === item.id;
               return (
                 <div key={item.id} onClick={() => toggleExpand(item.id)} className={`bg-slate-900/50 rounded-2xl border border-slate-800 transition-all duration-300 overflow-hidden ${isExpanded ? 'bg-slate-900 border-blue-500/30 shadow-lg' : ''}`}>
-                  
-                  {/* Kart Başlığı */}
                   <div className="p-4 flex items-center justify-between cursor-pointer">
                     <div>
                       <div className={`font-bold text-lg mb-1 ${isExpanded ? 'text-blue-400' : 'text-white'}`}>{item.date}</div>
@@ -53,8 +50,6 @@ export default function HistoryPage({ onBack }) {
                       <ChevronRight size={16} />
                     </div>
                   </div>
-                  
-                  {/* Detaylar (Accordion) */}
                   {isExpanded && (
                     <div className="px-4 pb-4 pt-0 animate-in fade-in slide-in-from-top-2 duration-200">
                       <div className="h-px w-full bg-slate-800 mb-4"></div>

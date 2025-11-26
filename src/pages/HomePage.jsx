@@ -4,7 +4,6 @@ import { Calendar, ChevronRight, History, Trash2, Settings, Trophy } from "../co
 import { calculateMuscleHeatmap } from "../utils/heatmapLogic"; 
 import BodyHeatmap from "../components/BodyHeatmap"; 
 
-// Yeni prop: onOpenHistory
 export default function HomePage({ onStartWorkout, onOpenAnalysis, onOpenSettings, onOpenHistory }) {
   const { history, clearHistory } = useWorkout(); 
   
@@ -12,11 +11,15 @@ export default function HomePage({ onStartWorkout, onOpenAnalysis, onOpenSetting
 
   const heatmapData = useMemo(() => calculateMuscleHeatmap(history), [history]);
 
+  const handleClearHistory = () => {
+    if (window.confirm("Tüm antrenman geçmişini silmek istediğine emin misin?")) clearHistory();
+  };
+
   return (
     <div className="h-[100dvh] bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden">
        
-       {/* Ana İçerik (Scroll edilebilir) */}
-       <div className="flex-1 overflow-y-auto scrollbar-hide p-6">
+       {/* GÜNCELLEME: p-6 yerine px-6 pb-6 pt-14 (Üst boşluk artırıldı) */}
+       <div className="flex-1 overflow-y-auto scrollbar-hide px-6 pb-6 pt-14">
            
            {/* Üst Bar */}
            <div className="mt-2 mb-6 flex justify-between items-start">
@@ -25,6 +28,11 @@ export default function HomePage({ onStartWorkout, onOpenAnalysis, onOpenSetting
                   <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-400 to-slate-600 italic tracking-tighter mb-1">IRONLOG</h1>
                   <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Progressive Overload Assistant</p>
               </div>
+              {history && history.length > 0 && (
+                <button onClick={handleClearHistory} className="bg-slate-900 p-3 rounded-xl text-slate-600 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-slate-800">
+                  <Trash2 size={20} />
+                </button>
+              )}
            </div>
 
            {/* Antrenmana Başla Kartı */}
@@ -55,7 +63,7 @@ export default function HomePage({ onStartWorkout, onOpenAnalysis, onOpenSetting
               </div>
            </div>
            
-           {/* --- YENİ: GEÇMİŞ BUTONU (Liste yerine bu geldi) --- */}
+           {/* Geçmiş Butonu */}
            <div className="mt-8 mb-10">
               <div className="flex items-center gap-2 mb-3 px-1 opacity-70">
                 <History size={16} />
